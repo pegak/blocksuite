@@ -23,6 +23,7 @@ import {
 } from '../../__internal__/index.js';
 import { getService } from '../../__internal__/service.js';
 import type { CodeBlockModel } from '../../code-block/index.js';
+import { showFormatQuickBar } from '../../components/format-quick-bar/index.js';
 import { DragHandle } from '../../components/index.js';
 import { toast } from '../../components/toast.js';
 import type { EmbedBlockModel } from '../../embed-block/embed-model.js';
@@ -562,17 +563,31 @@ export function createDragHandle(pageBlock: DefaultPageBlockComponent) {
           return;
         }
       }
-
-      const model = modelState?.model;
-      if (model) {
-        const parent = model.page.getParent(model);
-        if (parent && matchFlavours(parent, ['affine:database'])) {
-          const service = getService('affine:database');
-          service.setRowSelectionByElement(modelState.element);
-          return;
-        }
+      if (!modelState) {
+        pageBlock.selection.selectOneBlock();
+        return;
       }
-      pageBlock.selection.selectOneBlock(modelState?.element, modelState?.rect);
+      const model = modelState.model;
+      const parent = model.page.getParent(model);
+      if (parent && matchFlavours(parent, ['affine:database'])) {
+        const service = getService('affine:database');
+        service.setRowSelectionByElement(modelState.element);
+        return;
+      }
+      pageBlock.selection.selectOneBlock(modelState.element, modelState.rect);
+      showFormatQuickBar({
+        page: pageBlock.page,
+        direction: 'center-bottom',
+        anchorEl: {
+          getBoundingClientRect: () => {
+            const rect = modelState.element.getBoundingClientRect();
+            return {
+              x: rect.x + rect.width / 2,
+              y: rect.y + rect.height,
+            };
+          },
+        },
+      });
     },
     getSelectedBlocks() {
       return pageBlock.selection.state.selectedBlocks;
