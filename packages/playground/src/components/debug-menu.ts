@@ -655,7 +655,7 @@ function getTabGroupTemplate({
     style="display: flex; overflow: hidden;"
     @sl-tab-show=${(e: CustomEvent<{ name: string }>) => {
       const otherPage = workspace.getPage(e.detail.name);
-      if (!otherPage) throw new Error('page not found');
+      if (!otherPage) return;
       editor.page = otherPage;
     }}
   >
